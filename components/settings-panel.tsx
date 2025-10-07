@@ -46,17 +46,27 @@ export function SettingsPanel({
     onSettingsChange({ ...settings, quality: value[0] });
   };
 
-  const handleResizeChange = (dimension: "width" | "height", value: string) => {
-    const numValue = value === "" ? undefined : Number.parseInt(value);
+   const handleResizeChange = (dimension: "width" | "height", value: string) => {
+    const numValue = value === "" ? undefined : Number.parseInt(value)
     onSettingsChange({
       ...settings,
       resize: {
         ...settings.resize,
         [dimension]: numValue,
+        mode: settings.resize?.mode || "both",
       },
-    });
-  };
+    })
+  }
 
+  const handleResizeModeChange = (mode: "maxWidth" | "maxHeight" | "both") => {
+    onSettingsChange({
+      ...settings,
+      resize: {
+        ...settings.resize,
+        mode,
+      },
+    })
+  }
   const clearResize = () => {
     onSettingsChange({
       ...settings,
@@ -213,6 +223,30 @@ export function SettingsPanel({
             </Button>
           )}
         </div>
+            <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Constraint Mode</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: "maxWidth" as const, label: "Max Width" },
+                { value: "maxHeight" as const, label: "Max Height" },
+                { value: "both" as const, label: "Both" },
+              ].map((mode) => (
+                <button
+                  key={mode.value}
+                  onClick={() => handleResizeModeChange(mode.value)}
+                  className={cn(
+                    "relative rounded-md border px-2 py-1.5 text-xs font-medium transition-all duration-200",
+                    settings.resize?.mode === mode.value || (!settings.resize?.mode && mode.value === "both")
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-secondary/50 text-muted-foreground hover:border-primary/50",
+                  )}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">Width (px)</Label>
@@ -235,9 +269,7 @@ export function SettingsPanel({
             />
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Images will be resized proportionally
-        </p>
+        <p className="text-xs text-muted-foreground">Only resizes images larger than specified dimensions</p>
       </div>
 
       {/* Process Button */}
